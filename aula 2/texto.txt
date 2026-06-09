@@ -1,0 +1,13 @@
+# palavra() - função ação
+
+
+# palavra  = valor -  estrutura de dado
+
+
+# if for while  -  condição - estrutura de fluxo de controle (decisão - repetição)
+
+
+# print('Hello')
+# # palavra()
+
+print("Hello Word!")
