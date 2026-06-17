@@ -1,0 +1,15 @@
+Contexto: Uma ferramenta para investimento, a ferramenta é uma site 
+criado em html, css e js.
+
+Objetivo: Inserir valores, mostrar um objetivo e calcular 
+em quanto tempo, valores posso chegar até esse objetivo
+
+Estilo: glassmorfismo(css), paleta, estilo ciberpunk, cores e detalhes
+em preto, roxo, e verde. furturista, fonte estilo dadilografia.   
+
+Tom: Profissional, técnico.
+
+Audiência: Investidores iniciantes e intermediarios.
+
+Resposta: mostre uma calculadora de investimento, e estratégias de 
+investimento em moedas digitais. como ADA e bitcoin. 

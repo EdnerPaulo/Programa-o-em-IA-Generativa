@@ -1,0 +1,162 @@
+Atividade 1:
+
+SIMPLES
+explique o que é marketing digital
+
+RTF
+### Prompt 
+
+Estrutura:
+
+-Role
+Você é um analista e professor de marketing digital,
+Espacialista em produto.
+-Task
+Explique de forma técnica o que é marketing digital, faça citações
+de bibliografia famosas.
+-Format
+A resposta precisa ser em pdf, texto técnico.
+Crie também uma aplicação em html css e js quero apenas um arquivo index.html
+ vou hospedar no github e utilizar a huvem netlify, precisa ser responsivo,
+  utilizar das boas praticas para mobile
+
+CRAFT
+### Prompt 
+
+Estrutura:
+
+- Context
+Uma empresa quer entrar no mercado de marketing digital 
+- Role
+Você é um analista e profissional de marketing digital a anos no mercado.
+- Action
+Crie estratégias de marketing digital voltados para o mercado mais prospero
+- Format
+Apresente estratégias e conceitos aplicaveis em formato de Lista
+- Target
+Pequenas empresa, e empresas que estao estagnadas sem marketing digital
+
+COSTAR
+### Prompt 
+
+Estrutura:
+
+- Context
+um influencer quer se tornar marketeiro digital
+- Objective
+criar estratégias de marketing digital que qualquer um possa usar
+- Style
+dinamico ,fluido e semi-didatico
+- Tone
+entre profissional e casual ,com um pouco de usual 
+- Audience
+seus seguidores e empresas que querem se alavancar digitalmente 
+- Response
+elabores respostas as duvidas mais comum e expliquias
+-----------------------------
+
+Atividade 2:
+## Objetivo
+
+Reconhecer frameworks de prompt.
+
+### Pergunta
+
+Identifique qual estrutura está sendo utilizada:
+
+Prompt A
+
+```(prompt SIMPLES)
+Explique o que é computação em nuvem.
+```
+
+Prompt B
+
+```(prompt do RTF)
+Role: Você é professor de tecnologia.
+
+Task: Explique computação em nuvem.
+
+Format: Responda em 3 tópicos
+```
+
+Prompt C
+
+```(prompt do CRAFT)
+Contexto: Uma empresa quer migrar seus sistemas para a nuvem.
+
+Role: Especialista em cloud computing.
+
+Action: Explique vantagens da computação em nuvem.
+
+Format: Lista de 5 pontos.
+
+Target: Gestores de TI iniciantes.
+```
+
+Prompt D
+
+```(prompt do COSTAR)
+Contexto: Uma empresa quer migrar para a nuvem.
+
+Objetivo: Explicar benefícios da computação em nuvem.
+
+Estilo: Educativo.
+
+Tom: Profissional.
+
+Audiência: Gestores de TI.
+
+Formato da resposta: 5 tópicos explicados.
+```
+
+# Atividade 3 – Criação de prompt profissional
+
+## Objetivo
+
+Aplicar o **framework COSTAR**.
+
+### Situação
+
+Uma escola deseja divulgar cursos de tecnologia.
+
+### Tarefa
+
+Crie um prompt utilizando COSTAR para pedir à IA:
+
+- uma campanha de divulgação
+- voltada para jovens
+- com linguagem simples
+- em formato de texto para redes sociais
+
+Contexto: 
+    Escola deseja divulgar seus cursos de tecnologia
+Objetivo: 
+    Cria um uma campanha de divulgação dos cursos
+Estilo: 
+    Cativante e chamativo
+Tom: 
+    Com linguagem simples do dia a dia(facil entendimento)
+Audiência: 
+    Adolecentes, Jovens e  Novos Adultos
+Formato da resposta: 
+    Texto para redes sociais com chamadas rapidas
+
+
+# Atividade 4 – Avaliação crítica
+
+## Objetivo
+
+Desenvolver pensamento crítico sobre prompts.
+
+### Pergunta
+
+Responda:
+
+1. Qual estrutura gera respostas mais completas?
+R: Tanto o CRAFT quanto o COSTAR tem uma boa complexidade e geram respostas mais completas sem dualidades ou erros contantes
+2. Em quais situações um prompt simples é suficiente?
+R: quando vc quer algo que não tão especifico ou tão aprofundado , apenas instrução ou pergunta simples   
+3. Quando é melhor utilizar COSTAR?
+R: para definir e ter uma orientação mais aprofundade e especializado sobre um assunto. 
+

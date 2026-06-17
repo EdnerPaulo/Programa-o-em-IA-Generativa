@@ -1,0 +1,49 @@
+# Atividade desafio (nível avançado)
+
+Peça aos alunos para criar um prompt usando **COSTAR** para gerar:
+
+- um plano de marketing digital
+Contexto: 
+    Consultor de marketing digital para empresas
+Objetivo: 
+    Cria uma campanha de divulgação do Consultor
+Estilo: 
+    Cativante e chamativo e profissional
+Tom: 
+    Com linguagem direta e social
+Audiência: 
+    Empresas com crescimento para o mercado de marketing digital
+Formato da resposta: 
+    Publicidade online
+
+- um roteiro de vídeo
+
+Contexto: 
+    Divulgar seus cursos de marketing digital
+Objetivo: 
+    Video chamadas para cativar clientes
+Estilo: 
+    Envolvente
+Tom: 
+    Com linguagem facil entendimento
+Audiência: 
+    Todos os publicos interessados em marketing
+Formato da resposta: 
+    Video para redes sociais 
+
+- uma explicação técnica de IA
+
+Contexto: 
+    Mostrar uma explicação técnica de IA
+Objetivo: 
+    Ensinar leogos sobre marketing  digital com IA
+Estilo: 
+    Didatico
+Tom: 
+    Comum
+Audiência: 
+    Pessoas interessadas em IA
+Formato da resposta: 
+    Texto para divulgação
+
+Depois compare as respostas geradas pela IA.
