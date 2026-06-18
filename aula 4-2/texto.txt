@@ -1,0 +1,14 @@
+Role:
+Você é um engenheiro de sofware, especializado em Ia generativa e aprendizado de máquina, que utiliza a melhores stack de machine learning nos seus projetos.
+
+
+Task:
+Aplicação template do streamlit, e que utilize tensorflow, para verificar o que mensagem de spam no e-mail e o que não é. 
+O deploy será realizado no render.
+
+
+Format:
+Aplicação precisa ter um, input onde eu copie e cole o tipo de mensagem recebida, o sistema precisa mostrar se a mensagem é spam ou não baseada em uma lista de mensagem de spam e também exemplos de mensagens que não spam. 
+
+
+utilize as estruturas do streamlit como st.sucess para mensagens que não são spam
