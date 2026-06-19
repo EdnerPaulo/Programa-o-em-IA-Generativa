@@ -1,0 +1,921 @@
+# 🧠 CRAFT Prompt + Desenvolvimento Completo
+
+---
+
+## 📋 O PROMPT CRAFT
+
+```
+Context:  Um desenvolvedor iniciante quer criar um produto SaaS onde o 
+          usuário cola um trecho de código e uma IA explica linha por 
+          linha em português simples, traduzindo conceitos técnicos 
+          para linguagem acessível.
+
+Role:     Arquiteto de soluções de IA + Engenheiro Full Stack + 
+          Product Manager especializado em produtos para iniciantes.
+
+Action:   Desenvolva um plano técnico e de produto completo cobrindo:
+          problema, modelagem com TensorFlow/LLMs, deploy, análise 
+          competitiva, engenharia de prompt, interface com Streamlit, 
+          e pipeline de hospedagem com Git + Render.
+
+Format:   Guia estruturado em 7 etapas com código, diagramas ASCII, 
+          tabelas comparativas e exemplos práticos.
+
+Target:   Desenvolvedor solo ou equipe pequena (1-3 pessoas) com 
+          conhecimento intermediário em Python, sem experiência 
+          prévia em MLOps ou deploy de modelos de linguagem.
+```
+
+---
+
+## 1. 🎯 PROBLEMA
+
+### A Dor Real
+
+```
+┌─────────────────────────────────────────────────────┐
+│                                                     │
+│  "Eu copiei esse código do Stack Overflow,          │
+│   ele funciona... mas eu NÃO ENTENDO NADA."         │
+│                                                     │
+│  → 73% dos iniciantes abandonam programação         │
+│    nos primeiros 6 meses (fonte: Codecademy)        │
+│                                                     │
+│  → Documentação oficial é escrita para quem         │
+│    JÁ sabe programar                                │
+│                                                     │
+│  → ChatGPT explica, mas em inglês técnico           │
+│    e com respostas genéricas                        │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+### Mapa de Empatia do Usuário
+
+| Dimensão | Descrição |
+|---|---|
+| **Quem** | Estudante de TI, bootcamper, autodidata |
+| **O que sente** | Frustração, síndrome do impostor |
+| **O que quer** | Entender o *porquê*, não só o *como* |
+| **O que falta** | Uma ferramenta que fale a língua dele, em PT-BR, sem jargão |
+| **Concorrente indireto** | Perguntar no grupo do WhatsApp (lento e inconsistente) |
+
+### Proposta de Valor Única
+
+> *"Cole seu código. Entenda cada linha. Em português. Como se um amigo sênior estivesse do seu lado."*
+
+---
+
+## 2. 🧬 PENSAR NA SOLUÇÃO — Arquitetura do Modelo
+
+### Decisão Crítica: Treinar do zero ou usar API?
+
+```
+                    CUSTO vs CONTROLE
+
+    Treinar modelo próprio          Usar API de LLM
+    (TensorFlow/HuggingFace)        (Gemini/DeepSeek)
+         │                                │
+    ┌────┴────┐                      ┌────┴────┐
+    │ Alto    │                      │ Baixo   │
+    │ custo   │                      │ custo   │
+    │ GPU     │                      │ inicial │
+    │ meses   │                      │ dias    │
+    │ de treino│                     │ para    │
+    │         │                      │ lançar  │
+    └────┬────┘                      └────┬────┘
+         │                                │
+    Controle total              Dependência do provider
+    Dados proprietários         Rápido time-to-market
+```
+
+### 🏆 Recomendação Híbrida (Fase 1 → Fase 2)
+
+```
+FASE 1 (MVP - Semana 1-2)          FASE 2 (Escala - Mês 3+)
+━━━━━━━━━━━━━━━━━━━━━━━━━          ━━━━━━━━━━━━━━━━━━━━━━━
+API do DeepSeek/Gemini             Fine-tuning com TensorFlow
++ Prompt Engineering               + Dataset próprio
++ Streamlit                        + Modelo customizado
++ Render                           + Infra própria
+```
+
+### Modelo TensorFlow para Fase 2
+
+```python
+# arquitetura_treinamento.py
+# Fine-tuning de um modelo T5 para explicação de código
+
+import tensorflow as tf
+from transformers import (
+    TFAutoModelForSeq2SeqLM,
+    AutoTokenizer
+)
+
+class CodeExplainerModel:
+    """
+    Modelo seq2seq que recebe código e gera explicação em PT-BR.
+    Base: mT5-small (multilíngue, já entende português)
+    """
+
+    def __init__(self, model_name="google/mt5-small"):
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = TFAutoModelForSeq2SeqLM.from_pretrained(
+            model_name
+        )
+
+    def preparar_dataset(self, pares_codigo_explicacao):
+        """
+        pares_codigo_explicacao = [
+            {
+                "codigo": "x = [i**2 for i in range(10)]",
+                "explicacao": "Cria uma lista com os quadrados 
+                               dos números de 0 a 9 usando 
+                               list comprehension."
+            },
+            ...
+        ]
+        """
+        entradas = self.tokenizer(
+            [p["codigo"] for p in pares_codigo_explicacao],
+            max_length=512,
+            truncation=True,
+            padding="max_length",
+            return_tensors="tf"
+        )
+
+        saidas = self.tokenizer(
+            [p["explicacao"] for p in pares_codigo_explicacao],
+            max_length=512,
+            truncation=True,
+            padding="max_length",
+            return_tensors="tf"
+        )
+
+        return entradas, saidas
+
+    def treinar(self, entradas, saidas, epochs=3):
+        self.model.compile(
+            optimizer=tf.keras.optimizers.Adam(
+                learning_rate=3e-5
+            ),
+            loss=tf.keras.losses.SparseCategoricalCrossentropy(
+                from_logits=True
+            )
+        )
+
+        self.model.fit(
+            x=dict(entradas),
+            y=saidas["input_ids"],
+            epochs=epochs,
+            batch_size=8
+        )
+
+    def explicar(self, codigo: str) -> str:
+        inputs = self.tokenizer(
+            codigo,
+            return_tensors="tf",
+            max_length=512,
+            truncation=True
+        )
+        outputs = self.model.generate(
+            **inputs,
+            max_new_tokens=512,
+            temperature=0.3,
+            do_sample=True
+        )
+        return self.tokenizer.decode(
+            outputs[0],
+            skip_special_tokens=True
+        )
+```
+
+### Dataset: Como construir o par (código → explicação)
+
+```python
+# gerador_dataset.py
+# Usa LLM para gerar dataset inicial de treino
+
+import json
+
+PROMPT_GERADOR = """
+Gere 5 pares de (código Python, explicação simples em PT-BR)
+para o tópico: {topico}
+
+Formato JSON:
+[
+  {{
+    "codigo": "...",
+    "explicacao": "..."
+  }}
+]
+
+Regras da explicação:
+- Linguagem de um amigo, não de professor
+- Use analogias do dia a dia
+- Explique linha por linha
+- Nível: alguém que começou há 2 semanas
+"""
+
+TOPICOS = [
+    "variáveis e tipos",
+    "loops for e while",
+    "list comprehension",
+    "funções e parâmetros",
+    "classes e OOP básico",
+    "tratamento de erros",
+    "manipulação de arquivos",
+    "APIs e requests",
+]
+
+# Resultado esperado: ~2000 pares para fine-tuning inicial
+```
+
+---
+
+## 3. 🚀 DEPLOY — Pipeline Completo
+
+```
+┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
+│  CÓDIGO  │───▶│   GIT    │───▶│  RENDER  │───▶│  USUÁRIO │
+│  LOCAL   │    │  (repo)  │    │ (cloud)  │    │ (browser)│
+└──────────┘    └──────────┘    └──────────┘    └──────────┘
+                                     │
+                              ┌──────┴──────┐
+                              │  Streamlit  │
+                              │  + API LLM  │
+                              │  + Cache    │
+                              └─────────────┘
+```
+
+### Estrutura do Projeto
+
+```
+code-explainer/
+│
+├── app.py                  # Streamlit principal
+├── requirements.txt        # Dependências
+├── .env                    # Chaves de API (NÃO vai pro Git)
+├── .gitignore
+│
+├── core/
+│   ├── explainer.py        # Lógica de explicação
+│   ├── prompt_builder.py   # Construtor de prompts
+│   └── code_parser.py      # Parser linha a linha
+│
+├── models/
+│   ├── tf_model.py         # Wrapper TensorFlow (Fase 2)
+│   └── saved_model/        # Modelo treinado salvo
+│
+├── data/
+│   ├── dataset.json        # Pares código-explicação
+│   └── gerador_dataset.py
+│
+├── tests/
+│   └── test_explainer.py
+│
+├── render.yaml             # Config do Render
+└── README.md
+```
+
+### render.yaml
+
+```yaml
+services:
+  - type: web
+    name: code-explainer
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run app.py 
+                  --server.port=$PORT 
+                  --server.address=0.0.0.0
+    envVars:
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+    plan: free  # Começa grátis, escala depois
+```
+
+---
+
+## 4. ⚔️ ANÁLISE COMPETITIVA
+
+### Comparativo das IAs para este caso de uso
+
+```
+┌────────────┬────────┬────────┬────────┬────────┬────────┐
+│  Critério  │ Gemini │ Grok   │DeepSeek│ ChatGPT│Blackbox│
+├────────────┼────────┼────────┼────────┼────────┼────────┤
+│ PT-BR bom  │  ⭐⭐⭐  │  ⭐⭐   │  ⭐⭐⭐  │  ⭐⭐⭐  │  ⭐⭐   │
+│ Preço API  │ Grátis │  $$    │  $     │  $$$   │  $$    │
+│ Contexto   │  1M    │  128K  │  128K  │  128K  │  32K   │
+│ Código     │  ⭐⭐⭐  │  ⭐⭐   │  ⭐⭐⭐  │  ⭐⭐⭐  │  ⭐⭐⭐  │
+│ Simplicid. │  ⭐⭐   │  ⭐⭐   │  ⭐⭐   │  ⭐⭐⭐  │  ⭐⭐   │
+│ Velocidade │  ⭐⭐⭐  │  ⭐⭐   │  ⭐⭐⭐  │  ⭐⭐   │  ⭐⭐   │
+│ Open model │  ❌    │  ❌    │  ✅    │  ❌    │  ❌    │
+└────────────┴────────┴────────┴────────┴────────┴────────┘
+```
+
+### 🏆 Veredicto para MVP
+
+| Fase | Escolha | Por quê |
+|---|---|---|
+| **MVP** | **DeepSeek API** | Barato, ótimo em código, open-source (pode migrar depois) |
+| **Backup** | **Gemini API** | Free tier generoso, contexto gigante |
+| **Fase 2** | **DeepSeek local** | Roda o modelo open-source no próprio servidor |
+
+### O que NENHUM deles faz bem (seu diferencial)
+
+```
+Eles fazem:                    Você vai fazer:
+─────────────                  ────────────────
+Explicação genérica     →      Linha por linha com numeração
+Inglês técnico          →      Português com analogias BR
+Resposta em bloco       →      Visual interativo e colorido
+Sem contexto do nível   →      Ajusta complexidade ao usuário
+Sem memória             →      Lembra o que já foi explicado
+```
+
+---
+
+## 5. 🎯 FRAMEWORK DE PROMPT ENGINEERING
+
+### O Prompt Principal (Sistema)
+
+```python
+# core/prompt_builder.py
+
+SYSTEM_PROMPT = """
+Você é o "CodeBuddy", um mentor de programação brasileiro 
+que explica código para iniciantes absolutos.
+
+REGRAS OBRIGATÓRIAS:
+1. Explique LINHA POR LINHA, numerando cada linha
+2. Use português brasileiro informal e acolhedor
+3. Use analogias do cotidiano brasileiro 
+   (ex: "variável é tipo uma caixa com etiqueta")
+4. NUNCA use jargão sem explicar antes
+5. No final, dê um resumo de 2 frases do que o código faz
+6. Se o código tiver erro, aponte com carinho
+7. Sugira um exercício prático relacionado
+
+FORMATO DE SAÍDA:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 CÓDIGO ANALISADO:
+[repita o código com numeração]
+
+🔍 EXPLICAÇÃO LINHA A LINHA:
+Linha 1 → [explicação]
+Linha 2 → [explicação]
+...
+
+📦 RESUMO:
+[2 frases simples]
+
+🏋️ DESAFIO PRA VOCÊ:
+[exercício prático]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NÍVEL DO USUÁRIO: {nivel}
+"""
+
+NIVEIS = {
+    "iniciante": "Nunca programou. Explique como se fosse "
+                 "para uma criança de 12 anos.",
+    "basico": "Já viu variáveis e if/else. "
+              "Pode usar termos simples.",
+    "intermediario": "Já fez projetos pequenos. "
+                     "Pode ser mais técnico."
+}
+
+
+def build_prompt(codigo: str, nivel: str = "iniciante") -> list:
+    return [
+        {
+            "role": "system",
+            "content": SYSTEM_PROMPT.format(
+                nivel=NIVEIS.get(nivel, NIVEIS["iniciante"])
+            )
+        },
+        {
+            "role": "user",
+            "content": f"Explique este código:\n\n```python\n"
+                       f"{codigo}\n```"
+        }
+    ]
+```
+
+### Prompt para Parser Linha a Linha (Pré-processamento)
+
+```python
+# core/code_parser.py
+
+import ast
+import tokenize
+import io
+
+class CodeParser:
+    """
+    Quebra o código em linhas e classifica cada uma.
+    Isso enriquece o prompt com metadados.
+    """
+
+    def parse(self, codigo: str) -> list[dict]:
+        linhas = codigo.strip().split('\n')
+        resultado = []
+
+        for i, linha in enumerate(linhas, 1):
+            resultado.append({
+                "numero": i,
+                "conteudo": linha,
+                "tipo": self._classificar_linha(linha),
+                "indentacao": len(linha) - len(linha.lstrip())
+            })
+
+        return resultado
+
+    def _classificar_linha(self, linha: str) -> str:
+        linha = linha.strip()
+
+        if not linha:
+            return "vazia"
+        if linha.startswith('#'):
+            return "comentario"
+        if linha.startswith('def '):
+            return "definicao_funcao"
+        if linha.startswith('class '):
+            return "definicao_classe"
+        if linha.startswith('import ') or \
+           linha.startswith('from '):
+            return "importacao"
+        if linha.startswith('if ') or \
+           linha.startswith('elif ') or \
+           linha.startswith('else'):
+            return "condicional"
+        if linha.startswith('for ') or \
+           linha.startswith('while '):
+            return "loop"
+        if linha.startswith('return '):
+            return "retorno"
+        if linha.startswith('try') or \
+           linha.startswith('except'):
+            return "tratamento_erro"
+        if '=' in linha and not '==' in linha:
+            return "atribuicao"
+        if linha.startswith('print('):
+            return "saida"
+
+        return "expressao"
+
+    def gerar_contexto_rico(self, codigo: str) -> str:
+        """
+        Gera um contexto estruturado para o LLM
+        """
+        linhas = self.parse(codigo)
+        contexto = "ESTRUTURA DO CÓDIGO:\n"
+
+        for l in linhas:
+            if l["tipo"] != "vazia":
+                contexto += (
+                    f"  Linha {l['numero']} "
+                    f"[{l['tipo']}]: {l['conteudo']}\n"
+                )
+
+        return contexto
+```
+
+---
+
+## 6. 🖥️ STREAMLIT — Interface Gráfica
+
+### app.py Completo
+
+```python
+# app.py
+import streamlit as st
+from core.explainer import CodeExplainer
+from core.code_parser import CodeParser
+from core.prompt_builder import build_prompt
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# CONFIGURAÇÃO DA PÁGINA
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+st.set_page_config(
+    page_title="CodeBuddy 🧑‍💻",
+    page_icon="🧑‍💻",
+    layout="wide"
+)
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ESTILO CUSTOMIZADO
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+st.markdown("""
+<style>
+    .main-header {
+        font-size: 2.5rem;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .linha-explicacao {
+        background: #1e1e2e;
+        border-left: 4px solid #667eea;
+        padding: 12px;
+        margin: 8px 0;
+        border-radius: 0 8px 8px 0;
+        font-family: monospace;
+    }
+    .stTextArea textarea {
+        font-family: 'Fira Code', monospace !important;
+        font-size: 14px !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# INICIALIZAÇÃO
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+@st.cache_resource
+def carregar_explainer():
+    return CodeExplainer(provider="deepseek")
+
+explainer = carregar_explainer()
+parser = CodeParser()
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# SIDEBAR
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+with st.sidebar:
+    st.header("⚙️ Configurações")
+
+    nivel = st.selectbox(
+        "Seu nível:",
+        ["iniciante", "basico", "intermediario"],
+        format_func=lambda x: {
+            "iniciante": "🌱 Iniciante total",
+            "basico": "🌿 Já sei o básico",
+            "intermediario": "🌳 Intermediário"
+        }.get(x, x)
+    )
+
+    linguagem = st.selectbox(
+        "Linguagem:",
+        ["python", "javascript", "java", "c", "html/css"]
+    )
+
+    st.divider()
+
+    st.markdown("""
+    ### 💡 Dicas
+    - Cole trechos curtos (até 50 linhas)
+    - Quanto menor, melhor a explicação
+    - Funciona com qualquer linguagem!
+    """)
+
+    st.divider()
+    st.caption("CodeBuddy v0.1 | Feito com ❤️ no Brasil")
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ÁREA PRINCIPAL
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+st.markdown(
+    '<h1 class="main-header">CodeBuddy 🧑‍💻</h1>',
+    unsafe_allow_html=True
+)
+st.subheader(
+    "Cole seu código → Entenda cada linha → "
+    "Em português simples"
+)
+
+# Input do código
+codigo = st.text_area(
+    "Cole seu código aqui:",
+    height=250,
+    placeholder="# Exemplo:\n"
+                "for i in range(5):\n"
+                "    print(f'Número: {i}')"
+)
+
+# Botões de exemplo
+st.markdown("**Ou teste com um exemplo:**")
+col1, col2, col3 = st.columns(3)
+
+exemplos = {
+    "List Comprehension": 
+        "quadrados = [x**2 for x in range(10)]\n"
+        "print(quadrados)",
+    "Função simples": 
+        "def saudacao(nome):\n"
+        "    return f'Olá, {nome}!'\n\n"
+        "msg = saudacao('Maria')\n"
+        "print(msg)",
+    "Tratamento de erro": 
+        "try:\n"
+        "    numero = int(input('Digite: '))\n"
+        "    print(10 / numero)\n"
+        "except ValueError:\n"
+        "    print('Isso não é um número!')\n"
+        "except ZeroDivisionError:\n"
+        "    print('Não divide por zero!')"
+}
+
+with col1:
+    if st.button("📋 List Comp."):
+        codigo = exemplos["List Comprehension"]
+with col2:
+    if st.button("📋 Função"):
+        codigo = exemplos["Função simples"]
+with col3:
+    if st.button("📋 Try/Except"):
+        codigo = exemplos["Tratamento de erro"]
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# PROCESSAMENTO
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+if st.button("🔍 Explicar Código", type="primary", 
+             use_container_width=True):
+
+    if not codigo.strip():
+        st.warning("⚠️ Cole um código primeiro!")
+    else:
+        with st.spinner("Analisando seu código... 🤔"):
+
+            # 1. Parse estrutural
+            linhas_parseadas = parser.parse(codigo)
+            contexto_rico = parser.gerar_contexto_rico(codigo)
+
+            # 2. Build prompt
+            mensagens = build_prompt(codigo, nivel)
+
+            # 3. Chamar LLM
+            explicacao = explainer.explicar(
+                mensagens=mensagens,
+                contexto_extra=contexto_rico
+            )
+
+        # ━━━ EXIBIÇÃO DOS RESULTADOS ━━━
+
+        tab1, tab2, tab3 = st.tabs([
+            "📖 Explicação", 
+            "🔬 Análise Estrutural", 
+            "📊 Estatísticas"
+        ])
+
+        with tab1:
+            st.markdown(explicacao)
+
+            # Botão de copiar
+            st.download_button(
+                "📥 Baixar explicação",
+                explicacao,
+                "explicacao.md",
+                "text/markdown"
+            )
+
+        with tab2:
+            for linha in linhas_parseadas:
+                if linha["tipo"] != "vazia":
+                    cor = {
+                        "comentario": "🟢",
+                        "definicao_funcao": "🔵",
+                        "loop": "🟡",
+                        "condicional": "🟠",
+                        "atribuicao": "🟣",
+                        "importacao": "⚪",
+                        "retorno": "🔴",
+                    }.get(linha["tipo"], "⚫")
+
+                    st.markdown(
+                        f"`L{linha['numero']:02d}` "
+                        f"{cor} **{linha['tipo']}** → "
+                        f"`{linha['conteudo']}`"
+                    )
+
+        with tab3:
+            total = len(linhas_parseadas)
+            tipos = {}
+            for l in linhas_parseadas:
+                tipos[l["tipo"]] = tipos.get(l["tipo"], 0) + 1
+
+            col_a, col_b, col_c = st.columns(3)
+            col_a.metric("Total de linhas", total)
+            col_b.metric("Linhas de código", 
+                         total - tipos.get("vazia", 0))
+            col_c.metric("Complexidade", 
+                         "Baixa" if total < 15 else 
+                         "Média" if total < 30 else "Alta")
+
+            st.bar_chart(tipos)
+```
+
+### Módulo Explainer (core/explainer.py)
+
+```python
+# core/explainer.py
+import os
+from openai import OpenAI
+
+class CodeExplainer:
+    """
+    Wrapper unificado para múltiplos providers.
+    DeepSeek usa API compatível com OpenAI.
+    """
+
+    PROVIDERS = {
+        "deepseek": {
+            "base_url": "https://api.deepseek.com",
+            "model": "deepseek-chat",
+            "api_key_env": "DEEPSEEK_API_KEY"
+        },
+        "gemini": {
+            "base_url": "https://generativelanguage."
+                        "googleapis.com/v1beta/openai/",
+            "model": "gemini-2.0-flash",
+            "api_key_env": "GEMINI_API_KEY"
+        }
+    }
+
+    def __init__(self, provider="deepseek"):
+        config = self.PROVIDERS[provider]
+        self.client = OpenAI(
+            base_url=config["base_url"],
+            api_key=os.getenv(config["api_key_env"])
+        )
+        self.model = config["model"]
+
+    def explicar(self, mensagens: list, 
+                 contexto_extra: str = "") -> str:
+
+        if contexto_extra:
+            mensagens[1]["content"] += (
+                f"\n\n{contexto_extra}"
+            )
+
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=mensagens,
+            temperature=0.3,
+            max_tokens=2000
+        )
+
+        return response.choices[0].message.content
+```
+
+---
+
+## 7. 📦 GIT + RENDER + REQUISITOS
+
+### requirements.txt
+
+```txt
+# Interface
+streamlit==1.41.0
+
+# IA / LLM
+openai==1.58.0
+
+# Parsing de código
+asttokens==3.0.0
+
+# Utilitários
+python-dotenv==1.0.1
+
+# Fase 2 (descomentar quando treinar modelo)
+# tensorflow==2.18.0
+# transformers==4.47.0
+# datasets==3.2.0
+```
+
+### .gitignore
+
+```gitignore
+# Ambiente virtual
+venv/
+.venv/
+
+# Variáveis de ambiente (NUNCA subir secrets)
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Modelos (muito pesado para GitHub)
+models/saved_model/
+*.h5
+*.pb
+
+# Dados grandes
+data/*.csv
+data/*.parquet
+```
+
+### .env (local, NÃO vai pro Git)
+
+```env
+DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx
+GEMINI_API_KEY=AIzaSyxxxxxxxxxxxxxxxxxxxx
+```
+
+### Comandos de Deploy
+
+```bash
+# ━━━ 1. PREPARAR REPOSITÓRIO ━━━
+
+git init
+git add .
+git commit -m "feat: MVP do CodeBuddy"
+
+# Criar repo no GitHub
+gh repo create code-explainer --public --push
+
+# ━━━ 2. CONFIGURAR RENDER ━━━
+
+# 1. Acesse: render.com
+# 2. New → Web Service
+# 3. Conecte o repositório GitHub
+# 4. Render detecta render.yaml automaticamente
+# 5. Adicione as env vars no painel:
+#    - DEEPSEEK_API_KEY
+#    - GEMINI_API_KEY
+# 6. Deploy!
+
+# ━━━ 3. DEPLOY MANUAL (alternativa) ━━━
+
+# No painel do Render, configure:
+# Build Command:  pip install -r requirements.txt
+# Start Command:  streamlit run app.py \
+#                   --server.port=$PORT \
+#                   --server.address=0.0.0.0 \
+#                   --server.headless=true
+
+# ━━━ 4. VERIFICAR ━━━
+
+# URL final: code-explainer.onrender.com
+# Primeiro acesso pode levar ~30s (cold start free tier)
+```
+
+### CI/CD Simples com GitHub Actions
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy no Render
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Testes básicos
+        run: |
+          python -c "from core.explainer import CodeExplainer"
+          python -c "from core.code_parser import CodeParser"
+          echo "✅ Imports OK"
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deploy
+        run: |
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+```
+
+---
+
+## 🗺️ ROADMAP RESUMO
+
+```
+SEMANA 1          SEMANA 2         MÊS 2           MÊS 3+
+━━━━━━━━          ━━━━━━━━         ━━━━━           ━━━━━━
+✅ Prompt         ✅ Streamlit     📊 Analytics     🧠 Fine-tune
+   Engineering       MVP           📈 Usuários        TensorFlow
+✅ DeepSeek       ✅ Render        🎨 Temas         🏠 Modelo
+   API               Deploy        💾 Histórico       local
+✅ Parser         ✅ Domínio       👥 Login         💰 Monetizar
+   código            custom        📱 Mobile
+```
+
+> **Próximo passo imediato:** Criar a conta na [DeepSeek Platform](https://platform.deepseek.com), pegar a API key (tem crédito grátis), e rodar o `app.py` localmente com `streamlit run app.py`.

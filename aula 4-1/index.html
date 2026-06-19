@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL QTM: PROJEÇÃO DE ATIVOS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cyber-black: #050508;
+            --cyber-purple: #8b5cf6;
+            --cyber-purple-glow: rgba(139, 92, 246, 0.35);
+            --cyber-green: #10b981;
+            --cyber-green-glow: rgba(16, 185, 129, 0.35);
+            --glass-bg: rgba(10, 8, 22, 0.65);
+            --glass-border: rgba(139, 92, 246, 0.15);
+        }
+
+        body {
+            background-color: var(--cyber-black);
+            background-image: 
+                radial-gradient(circle at 5% 10%, rgba(139, 92, 246, 0.12) 0%, transparent 35%),
+                radial-gradient(circle at 95% 90%, rgba(16, 185, 129, 0.08) 0%, transparent 35%);
+            font-family: 'Share Tech Mono', monospace;
+            color: #e2e8f0;
+            position: relative;
+        }
+
+        /* Efeito Scanlines CRT Sutil */
+        body::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+
+        /* Efeito Glassmorphism Dinâmico com Cantos de Terminal */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 40px 0 rgba(0, 0, 0, 0.5);
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(139, 92, 246, 0.3);
+            box-shadow: 0 20px 40px 0 rgba(139, 92, 246, 0.05);
+        }
+
+        /* Detalhes de Cantos Tecnológicos nos Containers */
+        .tech-corners::before, .tech-corners::after {
+            content: "";
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-color: var(--cyber-purple);
+            border-style: solid;
+            pointer-events: none;
+        }
+        .tech-corners::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+        .tech-corners::after { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+
+        /* Efeitos Glow Cyberpunk */
+        .neon-border-green {
+            box-shadow: 0 0 12px var(--cyber-green-glow);
+            border: 1px solid var(--cyber-green);
+        }
+
+        .neon-text-green {
+            text-shadow: 0 0 8px var(--cyber-green-glow);
+            color: var(--cyber-green);
+        }
+
+        .neon-text-purple {
+            text-shadow: 0 0 8px var(--cyber-purple-glow);
+            color: var(--cyber-purple);
+        }
+
+        /* Customização de Inputs */
+        input:focus {
+            outline: none;
+            border-color: var(--cyber-green) !important;
+            box-shadow: 0 0 14px rgba(16, 185, 129, 0.25), inset 0 0 4px rgba(16, 185, 129, 0.1);
+        }
+        
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-4 md:p-8">
+
+    <header class="w-full max-w-5xl mx-auto mb-8 relative border border-purple-900/30 bg-black/40 backdrop-blur-sm p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="absolute top-0 left-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500 to-emerald-500 w-full"></div>
+        
+        <div class="flex items-center gap-3">
+            <div class="relative flex h-3 w-3">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-xl md:text-2xl font-black tracking-widest text-white">QUANTUM_CALC</h1>
+                    <span class="px-1.5 py-0.2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold rounded">v2.6_LIVE</span>
+                </div>
+                <p class="text-[10px] text-gray-400 uppercase tracking-widest mt-0.5">Mapeamento Preditivo e Escalonamento Temporal de Ativos</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4 text-[10px] tracking-wider font-mono bg-black/50 px-4 py-2 rounded-lg border border-purple-500/10 w-full sm:w-auto justify-between sm:justify-start">
+            <div class="border-r border-purple-900/40 pr-4">
+                <span class="text-gray-500 block text-[9px] uppercase">Algoritmo</span>
+                <span class="text-white font-bold">LOG_COMPOUNDS</span>
+            </div>
+            <div>
+                <span class="text-gray-500 block text-[9px] uppercase">Core_Status</span>
+                <span class="neon-text-purple font-bold animate-pulse">MATRIX_ENGAGED</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 flex-grow items-stretch">
+        
+        <section class="lg:col-span-5 glass-panel tech-corners p-6 rounded-xl flex flex-col justify-between border-l-2 border-l-purple-500/50">
+            <div class="space-y-4">
+                <div class="flex justify-between items-center border-b border-purple-900/20 pb-2 mb-4">
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-white/90">Parâmetros Quantitativos</h2>
+                    <span class="text-[9px] text-purple-400 font-mono">[REC_IN_01]</span>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="block text-[10px] uppercase text-gray-400 tracking-wider">Aporte Inicial Alocado (R$)</label>
+                    <input type="number" id="capitalInicial" value="5000" class="w-full bg-black/75 border border-purple-500/20 rounded-lg p-2.5 text-sm text-emerald-400 font-mono transition-all">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="block text-[10px] uppercase text-gray-400 tracking-wider">Aporte Mensal Recorrente (R$)</label>
+                    <input type="number" id="aporteMensal" value="500" class="w-full bg-black/75 border border-purple-500/20 rounded-lg p-2.5 text-sm text-emerald-400 font-mono transition-all">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="block text-[10px] uppercase text-gray-400 tracking-wider">Taxa de Rendimento Esperada (% Anual)</label>
+                    <input type="number" id="taxaAnual" value="15" class="w-full bg-black/75 border border-purple-500/20 rounded-lg p-2.5 text-sm text-emerald-400 font-mono transition-all">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="block text-[10px] uppercase text-gray-400 tracking-wider">Target / Meta de Liquidez (R$)</label>
+                    <input type="number" id="metaObjetivo" value="100000" class="w-full bg-black/75 border border-purple-500/20 rounded-lg p-2.5 text-sm text-emerald-400 font-mono transition-all">
+                </div>
+            </div>
+
+            <button onclick="processarProjecao()" class="w-full mt-6 bg-purple-600/10 hover:bg-emerald-500/10 text-purple-400 hover:text-emerald-400 font-bold py-3 px-4 rounded-lg border border-purple-500/30 hover:border-emerald-500 transition-all duration-300 uppercase tracking-widest text-xs neon-border-green">
+                Executar Projeção Algorítmica
+            </button>
+        </section>
+
+        <section class="lg:col-span-7 flex flex-col gap-4 justify-between">
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="glass-panel tech-corners p-4 rounded-xl border-l-2 border-l-emerald-500/50 flex flex-col justify-between h-20">
+                    <span class="text-[9px] uppercase text-gray-400 tracking-wider block">Cronologia Alcançada</span>
+                    <span id="outTempo" class="text-xl font-bold neon-text-green font-mono">0 meses</span>
+                </div>
+                <div class="glass-panel tech-corners p-4 rounded-xl border-l-2 border-l-white/30 flex flex-col justify-between h-20">
+                    <span class="text-[9px] uppercase text-gray-400 tracking-wider block">Total de Capital Injetado</span>
+                    <span id="outCapitalInvestido" class="text-xl font-bold text-white font-mono">R$ 0,00</span>
+                </div>
+            </div>
+
+            <div class="glass-panel tech-corners p-6 rounded-xl border border-purple-500/20 flex-grow flex flex-col justify-between gap-6">
+                <div>
+                    <div class="flex justify-between items-center border-b border-purple-900/30 pb-2 mb-4">
+                        <h3 class="text-xs uppercase font-bold tracking-widest text-purple-400">Sumário da Projeção Consolada</h3>
+                        <span class="text-[9px] bg-purple-950/40 text-purple-300 px-2 py-0.5 rounded border border-purple-500/30 font-mono">OUTPUT_MATRIZ</span>
+                    </div>
+                    
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between items-center bg-black/20 p-2 rounded border border-white/5">
+                            <span class="text-gray-400 text-xs uppercase tracking-wider">Montante Final Bruto:</span>
+                            <span id="outMontanteFinal" class="font-bold text-white font-mono">R$ 0,00</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-black/20 p-2 rounded border border-white/5">
+                            <span class="text-gray-400 text-xs uppercase tracking-wider">Rendimento em Juros Puros:</span>
+                            <span id="outJurosAcumulados" class="font-bold text-emerald-400 font-mono">R$ 0,00</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-black/20 p-2 rounded border border-white/5">
+                            <span class="text-gray-400 text-xs uppercase tracking-wider">Multiplicador Alocativo:</span>
+                            <span id="outEficiencia" class="font-bold neon-text-purple font-mono">0.0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-black/80 rounded-lg border border-purple-900/40 font-mono text-xs text-purple-300/80 flex items-center gap-2">
+                    <span class="text-emerald-400 animate-pulse">&gt;</span> 
+                    <span id="logMensagem" class="truncate">Aguardando gatilho do operador para compilação...</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="w-full max-w-5xl mx-auto mt-6 text-center text-[9px] text-gray-600 uppercase tracking-widest">
+        Validações matemáticas exponenciais lineares. Criptoativos e ativos digitais contêm volatilidade. Guarde suas chaves.
+    </footer>
+
+    <script>
+        function processarProjecao() {
+            // Captura de variáveis dos nós do DOM
+            const capitalInicial = parseFloat(document.getElementById('capitalInicial').value) || 0;
+            const aporteMensal = parseFloat(document.getElementById('aporteMensal').value) || 0;
+            const taxaAnual = parseFloat(document.getElementById('taxaAnual').value) || 0;
+            const metaObjetivo = parseFloat(document.getElementById('metaObjetivo').value) || 0;
+
+            // Filtros de Integridade Estrutural
+            if (capitalInicial >= metaObjetivo) {
+                document.getElementById('logMensagem').innerText = "ERRO: Capital inicial inserido já atinge o target de segurança.";
+                return;
+            }
+            if (taxaAnual <= 0 || (aporteMensal <= 0 && capitalInicial <= 0)) {
+                document.getElementById('logMensagem').innerText = "ERRO: Vetores de rendimento ou aportes nulos impossibilitam cálculo.";
+                return;
+            }
+
+            // Conversão de Taxa Anual para Mensal Composta Equivalente
+            const taxaMensal = Math.pow((1 + (taxaAnual / 100)), (1 / 12)) - 1;
+
+            let saldoAtual = capitalInicial;
+            let totalInvestido = capitalInicial;
+            let meses = 0;
+            const safetyCap = 1200; // Trava de proteção em 100 anos
+
+            // Ciclo iterativo de acumulação contínua
+            while (saldoAtual < metaObjetivo && meses < safetyCap) {
+                meses++;
+                saldoAtual += aporteMensal;
+                totalInvestido += aporteMensal;
+                saldoAtual = saldoAtual * (1 + taxaMensal);
+            }
+
+            const jurosAcumulados = saldoAtual - totalInvestido;
+            const eficiencia = (jurosAcumulados / totalInvestido) * 100;
+
+            // Instanciação de formatação para padrão financeiro BRL
+            const formatarMoeda = (valor) => valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            // Injeção limpa de dados processados nos elementos HTML
+            document.getElementById('outTempo').innerText = meses >= safetyCap ? "TIMEOUT (+100 ANOS)" : `${meses} MESES (~${(meses/12).toFixed(1)} ANOS)`;
+            document.getElementById('outCapitalInvestido').innerText = formatarMoeda(totalInvestido);
+            document.getElementById('outMontanteFinal').innerText = formatarMoeda(saldoAtual);
+            document.getElementById('outJurosAcumulados').innerText = formatarMoeda(jurosAcumulados);
+            document.getElementById('outEficiencia').innerText = `+${eficiencia.toFixed(1)}%`;
+
+            // Mensagem de log dinâmico no terminal
+            document.getElementById('logMensagem').innerText = `COMPILAÇÃO CONCLUÍDA: Target simulado com taxa contínua de ${(taxaMensal * 100).toFixed(4)}% ao mês.`;
+        }
+
+        // Execução no primeiro disparo de renderização de janela
+        window.onload = function() {
+            processarProjecao();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,259 @@
+Aqui está o desenvolvimento da ideia usando o framework CRAFT:
+
+---
+
+## **Context**
+Plataforma educacional de programação voltada para iniciantes brasileiros que enfrentam dificuldades em entender códigos complexos, documentação técnica em inglês e jargões de programação.
+
+---
+
+## **Role**
+Engenheiro de Machine Learning e Desenvolvedor Full Stack especializado em NLP (Processamento de Linguagem Natural) e criação de ferramentas educacionais acessíveis.
+
+---
+
+## **Action**
+Desenvolva uma solução completa seguindo estas 7 etapas:
+
+### **1. Problema**
+- Iniciantes desistem de programar por não entenderem código
+- Documentação técnica é intimidadora e em inglês
+- Falta de ferramentas que "traduzam" código para linguagem simples
+- Barreira do idioma para brasileiros (maioria do conteúdo em inglês)
+
+### **2. Modelo TensorFlow - Solução Técnica**
+```python
+# Estrutura do modelo de explicação de código
+modelo = Sequential([
+    # Camada de embedding para tokens de código
+    Embedding(vocab_size=50000, embedding_dim=256),
+    
+    # LSTM bidirecional para entender contexto do código
+    Bidirectional(LSTM(256, return_sequences=True)),
+    
+    # Attention mechanism para focar em partes relevantes
+    AttentionLayer(),
+    
+    # Decoder para gerar explicações em português
+    Dense(512, activation='relu'),
+    Dropout(0.3),
+    Dense(vocab_size_pt, activation='softmax')
+])
+
+# Treinamento com dataset pareado: código → explicação
+modelo.compile(
+    optimizer='adam',
+    loss='sparse_categorical_crossentropy',
+    metrics=['accuracy', 'bleu_score']  # BLEU para qualidade da tradução
+)
+```
+
+**Dataset de treino:**
+- 100k+ pares (código Python, explicação em português)
+- Curadoria de tutoriais brasileiros, fóruns, documentação traduzida
+- Data augmentation com variações de código
+
+### **3. Deploy - Arquitetura**
+```
+[Usuário] → [Streamlit Frontend] → [API FastAPI] → [TensorFlow Serving]
+                ↓                        ↓
+         [Cache Redis]          [Modelo TF + Tokenizers]
+```
+
+- **Containerização:** Docker + docker-compose
+- **Escalabilidade:** Kubernetes (se necessário)
+- **Monitoramento:** Prometheus + Grafana
+
+### **4. APIs de IA - Comparativo e Escolha**
+
+| API | Vantagem | Uso no Projeto |
+|-----|----------|----------------|
+| **Gemini 1.5 Pro** | Melhor custo-benefício, contexto 1M tokens | Explicação de códigos longos |
+| **GPT-4 Turbo** | Maior precisão técnica | Explicações complexas/algoritmos |
+| **DeepSeek Coder** | Especializado em código, open-source opcional | Análise técnica profunda |
+| **Grok** | Rapidez, integração X | Versão social/compartilhamento |
+| **Blackbox AI** | Foco em autocomplete | Sugestões de melhoria |
+
+**Estratégia híbrida:** Modelo TensorFlow próprio para 80% dos casos + APIs para casos complexos (fallback).
+
+### **5. Framework de Prompt - Estrutura Especializada**
+
+```python
+PROMPT_TEMPLATE = """
+[CONTEXTO] Você é um professor de programação brasileiro, didático e paciente.
+[PERFIL_ALUNO] Iniciante em programação, primeira linguagem.
+[OBJETIVO] Explicar o código abaixo como se estivesse ensinando um amigo.
+
+[CÓDIGO]
+{user_code}
+
+[FORMATO_SAÍDA]
+1. VISÃO GERAL (1 frase simples)
+2. EXPLICAÇÃO LINHA POR LINHA:
+   • Linha {X}: [código] → [explicação em português simples]
+3. CONCEITOS NOVOS (se houver):
+   • {conceito}: definição com analogia do dia a dia
+4. EXEMPLO PRÁTICO: situação real de uso
+
+[TÓPICOS PROIBIDOS]
+❌ Jargões sem explicação
+❌ "É simples" ou "obviamente"
+❌ Inglês desnecessário
+
+[ESTILO]
+✅ Analogias com coisas do cotidiano
+✅ Emojis estratégicos para engajamento
+✅ Tom amigável e encorajador
+"""
+```
+
+### **6. Streamlit - Interface Gráfica**
+
+```python
+import streamlit as st
+import tensorflow as tf
+from code_explainer import explain_code
+
+# Configuração da página
+st.set_page_config(
+    page_title="Códego - Seu Código Explicado 🇧🇷",
+    page_icon="💡",
+    layout="wide"
+)
+
+# Sidebar com configurações
+with st.sidebar:
+    st.title("⚙️ Configurações")
+    nivel = st.select_slider(
+        "Seu nível:",
+        options=["🐣 Iniciante Total", "🐥 Iniciante", "🐔 Intermediário"]
+    )
+    linguagem = st.selectbox(
+        "Linguagem do código:",
+        ["Python", "JavaScript", "Java", "C++", "Outra"]
+    )
+
+# Área principal
+col1, col2 = st.columns(2)
+
+with col1:
+    st.header("📝 Cole seu código aqui")
+    codigo = st.text_area(
+        "Código:",
+        height=400,
+        placeholder="Cole seu código aqui...\n\nExemplo:\nprint('Olá, Mundo!')\nfor i in range(5):\n    print(i)"
+    )
+    
+    if st.button("🔍 Explicar Código", type="primary"):
+        with st.spinner("Analisando seu código... 🤔"):
+            explicacao = explain_code(codigo, nivel, linguagem)
+            st.session_state['explicacao'] = explicacao
+
+with col2:
+    st.header("🎓 Explicação")
+    if 'explicacao' in st.session_state:
+        st.markdown(st.session_state['explicacao'])
+        
+        # Features extras
+        with st.expander("🎯 Dicas de Melhoria"):
+            st.write("Sugestões para otimizar seu código...")
+        
+        with st.expander("📚 Conceitos Relacionados"):
+            st.write("Links e materiais complementares...")
+
+# Footer
+st.markdown("---")
+st.markdown("💡 **Dica:** Quanto mais específico seu código, melhor a explicação!")
+```
+
+### **7. Deploy e Infraestrutura**
+
+**Estrutura do Projeto:**
+```
+codego/
+├── src/
+│   ├── model/
+│   │   ├── code_explainer_tf.py    # Modelo TensorFlow
+│   │   └── tokenizers/              # Tokenizers treinados
+│   ├── api/
+│   │   ├── main.py                  # FastAPI
+│   │   └── prompts.py              # Templates de prompt
+│   └── app/
+│       ├── streamlit_app.py        # Interface
+│       └── utils.py                # Funções auxiliares
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+├── .gitignore
+└── README.md
+```
+
+**Deploy no Render:**
+```yaml
+# render.yaml
+services:
+  - type: web
+    name: codego-api
+    env: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: MODEL_PATH
+        value: /app/models
+      - key: GEMINI_API_KEY
+        sync: false
+    
+  - type: web
+    name: codego-frontend
+    env: docker
+    dockerfilePath: ./Dockerfile.frontend
+```
+
+**Requisitos mínimos (requirements.txt):**
+```
+tensorflow==2.15.0
+streamlit==1.31.0
+fastapi==0.109.0
+redis==5.0.1
+google-generativeai==0.3.0
+transformers==4.36.0
+sentencepiece==0.1.99
+```
+
+---
+
+## **Format**
+Documento técnico estruturado com:
+- 📊 **Diagramas e fluxogramas** para arquitetura
+- 💻 **Códigos completos e funcionais**
+- 📋 **Tabelas comparativas** (APIs, custos, performance)
+- ✅ **Checklists de implementação**
+- 🎨 **Mockups da interface** (descrições detalhadas)
+
+---
+
+## **Target**
+**Perfil do Usuário Final:**
+- 🇧🇷 Brasileiros, 15-35 anos
+- 📚 Estudantes de programação (cursos online, faculdade, autodidatas)
+- 🐣 Nível: Iniciante a Intermediário
+- 💰 Gratuito com opção premium (APIs avançadas)
+- 📱 Acesso via web (mobile-first)
+
+**Persona Principal:** "Lucas, 22 anos, fazendo transição de carreira para TI, desistiu 2 vezes de cursos online por não entender a lógica do código."
+
+---
+
+## **Diferenciais Competitivos**
+1. 🗣️ **Português nativo** como primeira língua (não tradução automática)
+2. 🎯 **Explicações contextualizadas** com cultura brasileira
+3. 🧠 **Modelo próprio + APIs** para melhor custo-benefício
+4. 📈 **Aprendizado adaptativo** (nível do usuário)
+5. 🤝 **Comunidade integrada** para compartilhar aprendizados
+
+---
+
+**Métricas de Sucesso:**
+- Tempo médio de explicação < 3 segundos
+- Satisfação do usuário > 4.5/5
+- Retenção após 30 dias > 40%
+- Custo por explicação < R$ 0,01 (modelo próprio)
