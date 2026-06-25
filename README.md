@@ -42,7 +42,7 @@ O conteúdo está estruturado de forma cronológica e modular para facilitar a n
 ---
 
 ## 💻 Tecnologias e Ferramentas Sugeridas
-* **Linguagens:** Python / C# / JavaScript
+* **Linguagens:** Python
 * **Ambientes:** Git, GitHub, VS Code
 * **IA & Engenharia de Prompts:** Modelos de Linguagem de Grande Porte (LLMs), GitAssistants, Copilot e ferramentas de produtividade para **Vibe-Code**.
 
