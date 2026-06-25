@@ -1,0 +1,8 @@
+streamlit
+nltk
+spacy
+deep-translator
+pandas
+matplotlib
+altair
+wordcloud
