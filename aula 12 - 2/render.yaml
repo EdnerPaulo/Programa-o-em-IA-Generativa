@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: agente-openrouter
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false # definido manualmente no dashboard do Render (segredo)
+      - key: OPENROUTER_MODEL
+        value: openrouter/free
+      - key: OPENROUTER_BASE_URL
+        value: https://openrouter.ai/api/v1
+      - key: APP_TITLE
+        value: Agente Python + OpenRouter
+      - key: PYTHON_VERSION
+        value: 3.12.4

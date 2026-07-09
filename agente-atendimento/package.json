@@ -1,0 +1,10 @@
+{
+    "name": "concessionaria-francisco-ia",
+    "version": "1.0.0",
+    "description": "Agente de atendimento integrado ao OpenRouter via Netlify Functions",
+    "main": "script.js",
+    "engines": {
+      "node": ">=18.0.0"
+    },
+    "dependencies": {}
+  }
